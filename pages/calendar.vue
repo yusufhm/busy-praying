@@ -78,29 +78,20 @@ export default {
       'grey darken-1',
     ],
   }),
-  computed: {
-    times() {
-      return this.$store.state.prayertimes.times
-    },
-  },
-  mounted() {
-    const { start, end } = this.$store.state.calendar
-    this.fetchTimes().then(() => {
-      this.getEvents({ start, end })
-    })
-  },
   methods: {
-    getEvents({ start, end }) {
+    async getEvents({ start, end }) {
       this.setStartEnd({ start, end })
+      await this.fetchTimes(start, end)
+      const times = this.$store.getters['prayertimes/getTimes'](start, end)
       const events = []
-      if (!this.times.length) {
+      if (!times.length) {
         return
       }
 
-      for (let i = 0; i < this.times.length; i++) {
-        const date = this.times[i].date.readable
-        Object.keys(this.times[i].timings).forEach((name) => {
-          const fullDate = `${date} ${this.times[i].timings[name]}`
+      for (let i = 0; i < times.length; i++) {
+        const date = times[i].date.readable
+        Object.keys(times[i].timings).forEach((name) => {
+          const fullDate = `${date} ${times[i].timings[name]}`
           const fullDateTimestamp = Date.parse(fullDate)
           events.push({
             name,

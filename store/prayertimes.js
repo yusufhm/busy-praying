@@ -1,18 +1,36 @@
 export const state = () => ({
-  times: [],
+  times: {},
 })
 
+export const getters = {
+  getTimes: (state) => (start, end) => {
+    const key = `${start.year}-${start.month}`
+    if (!(key in state.times)) {
+      return []
+    }
+    return state.times[key]
+  },
+}
+
 export const mutations = {
-  setTimes(state, times) {
-    state.times = times
+  setTimes(state, { key, times }) {
+    state.times[key] = times
   },
 }
 
 export const actions = {
-  async fetchTimes({ commit }) {
-    const times = await this.$axios.$get(
-      'https://api.aladhan.com/v1/calendarByCity?city=Wetherill%20Park&country=AU&method=2&month=03&year=2021'
-    )
-    commit('setTimes', times.data)
+  async fetchTimes({ commit, state }, start, end) {
+    const key = `${start.year}-${start.month}`
+    if (key in state.times && state.times[key].length) {
+      return state.times[key]
+    }
+    const times = await this.$alAdhanFetchPrayerTimes({
+      city: 'Wetherill Park',
+      country: 'AU',
+      method: 2,
+      month: start.month,
+      year: start.year,
+    })
+    commit('setTimes', { key, times })
   },
 }
