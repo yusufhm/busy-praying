@@ -26,6 +26,7 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist
+        cname: busy-praying.khatm.net
 #     - run: git clone --single-branch --branch gh-pages git@github.com:yusufhm/busy-praying.git /tmp/busy-praying-gh-pages
 #     - run: |
 #         set -eux
