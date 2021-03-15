@@ -11,12 +11,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Use Node.js 14.x
       uses: actions/setup-node@v1
       with:
         node-version: '14.x'
 
+    - run: npm install
     - run: npm run build --if-present
 #     - run: npm test
     - run: npm run generate
@@ -31,4 +32,4 @@ jobs:
 #         rsync -av --delete --cvs-exclude --exclude CNAME dist/ /tmp/busy-praying-gh-pages/
 #         cd /tmp/busy-praying-gh-pages/
 #         git add .
-      
+
