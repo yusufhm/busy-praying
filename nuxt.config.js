@@ -9,8 +9,8 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - busy-praying',
-    title: 'busy-praying',
+    titleTemplate: '%s - Busy Praying',
+    title: 'Busy Praying',
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -23,7 +23,7 @@ export default {
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['~/plugins/aladhan.js'],
+  plugins: ['~/plugins/aladhan.js', '~/plugins/vuex-persist'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
