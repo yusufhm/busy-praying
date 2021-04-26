@@ -1,0 +1,10 @@
+name: busy-praying
+recipe: mean
+config:
+  node: 14
+  build:
+    - npm install --global npm
+    - npm install
+  port: '3000'
+  command: npm run dev
+  database: mariadb
