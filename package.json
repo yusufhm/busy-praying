@@ -34,7 +34,7 @@
     "eslint-plugin-vue": "^7.5.0",
     "nightwatch": "^3.4.1",
     "prettier": "^2.2.1",
-    "stylelint": "^13.9.0",
+    "stylelint": "^16.3.1",
     "stylelint-config-prettier": "^8.0.2",
     "stylelint-config-standard": "^20.0.0"
   }
