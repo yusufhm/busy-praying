@@ -20,7 +20,7 @@
   </v-form>
 </template>
 <script>
-import csc from 'country-state-city'
+import { Country, City } from 'country-state-city'
 export default {
   data: () => ({
     valid: true,
@@ -29,13 +29,13 @@ export default {
   }),
   computed: {
     countries: () => {
-      return csc.getAllCountries().map(({ name, isoCode }) => {
+      return Country.getAllCountries().map(({ name, isoCode }) => {
         return { text: name, value: isoCode }
       })
     },
     cities: (state) => {
       if (!state.country) return []
-      return csc.getCitiesOfCountry(state.country).map(({ name }) => {
+      return City.getCitiesOfCountry(state.country).map(({ name }) => {
         return { text: name, value: name }
       })
     },

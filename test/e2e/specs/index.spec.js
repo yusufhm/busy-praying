@@ -1,9 +1,9 @@
-describe('Example test', () => {
-  test('open app correctly', (browser) => {
+describe('Home page', () => {
+  test('shows welcome heading and continue button', (browser) => {
     const main = browser.page.main()
     main.navigate()
-    main.assert.visible('@docButton')
-    main.assert.visible('@githubButton')
+    main.assert.visible('@welcomeHeading')
+    main.assert.visible('@continueButton')
     browser.end()
   })
 })
