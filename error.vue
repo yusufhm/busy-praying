@@ -3,7 +3,7 @@
     <v-main>
       <v-container>
         <h1>{{ title }}</h1>
-        <NuxtLink to="/">Home page</NuxtLink>
+        <v-btn variant="text" @click="clearError({ redirect: '/' })">Home page</v-btn>
       </v-container>
     </v-main>
   </v-app>
