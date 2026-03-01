@@ -96,15 +96,25 @@ const COLORS = ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'gre
 const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset'])
 
 const title = computed(() => {
-  const d = focus.value ? new Date(focus.value) : new Date()
+  let d
+  if (focus.value) {
+    const [y, m] = focus.value.split('-').map(Number)
+    d = new Date(y, m - 1, 1)
+  } else {
+    d = new Date()
+  }
   return new Intl.DateTimeFormat('en-US', {
     month: 'long',
     year: 'numeric',
   }).format(d)
 })
 
+// Format a Date using its local calendar date, avoiding UTC-midnight shift from toISOString().
 function toIsoDate(date) {
-  return date.toISOString().split('T')[0]
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 function setToday() {
@@ -112,7 +122,13 @@ function setToday() {
 }
 
 function navigate(delta) {
-  const d = focus.value ? new Date(focus.value) : new Date()
+  let d
+  if (focus.value) {
+    const [y, m, dy] = focus.value.split('-').map(Number)
+    d = new Date(y, m - 1, dy)
+  } else {
+    d = new Date()
+  }
   if (type.value === 'month') d.setMonth(d.getMonth() + delta)
   else if (type.value === 'week') d.setDate(d.getDate() + delta * 7)
   else d.setDate(d.getDate() + delta)
@@ -153,8 +169,19 @@ function rnd(a, b) {
 }
 
 async function updateRange() {
-  const d = focus.value ? new Date(focus.value) : new Date()
-  const start = { year: d.getFullYear(), month: d.getMonth() + 1 }
+  // Parse ISO date parts directly to avoid UTC-midnight shift on date-only strings
+  // (new Date("2026-03-01") is UTC midnight, which is the wrong local date in UTC- zones).
+  let year, month
+  if (focus.value) {
+    const parts = focus.value.split('-')
+    year = parseInt(parts[0])
+    month = parseInt(parts[1])
+  } else {
+    const now = new Date()
+    year = now.getFullYear()
+    month = now.getMonth() + 1
+  }
+  const start = { year, month }
 
   calendarStore.setStartEnd({ start, end: start })
   await prayertimesStore.fetchTimes(start, $alAdhanFetchPrayerTimes)
@@ -164,18 +191,21 @@ async function updateRange() {
 
   const newEvents = []
   for (const day of times) {
-    const date = day.date.readable
+    const gr = day.date.gregorian
+    const yr = parseInt(gr.year)
+    const mo = gr.month.number - 1  // Date constructor uses 0-indexed months
+    const dy = parseInt(gr.day)
     for (const name of Object.keys(day.timings)) {
       if (SKIP_TIMINGS.has(name)) continue
-      // Strip non-standard timezone suffix (e.g. " (IST)") that causes Date.parse
-      // to return NaN on many mobile browsers.
+      // Strip non-standard timezone suffix (e.g. " (IST)") before parsing.
       const timeStr = day.timings[name].replace(/\s*\(.*\)\s*$/, '')
-      const ts = Date.parse(`${date} ${timeStr}`)
-      if (isNaN(ts)) continue
+      const [hours, minutes] = timeStr.split(':').map(Number)
+      if (isNaN(hours) || isNaN(minutes)) continue
+      const ts = new Date(yr, mo, dy, hours, minutes, 0).getTime()
       newEvents.push({
         title: name,
         start: new Date(ts),
-        end: new Date(ts + 15 * 60 * 1000),
+        end: new Date(ts + 30 * 60 * 1000),
         color: COLORS[rnd(0, COLORS.length - 1)],
       })
     }
