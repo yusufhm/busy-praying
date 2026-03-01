@@ -37,7 +37,7 @@
         <v-calendar
           v-model="focus"
           :events="events"
-          :view-mode="type"
+          :type="type"
           @click:event="showEvent"
           @click:day="({ date }) => viewDay(date)"
           @update:model-value="updateRange"
