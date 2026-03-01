@@ -13,6 +13,11 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/test/unit/**/*.spec.js'],
   collectCoverage: true,
-  collectCoverageFrom: ['stores/**/*.js', 'plugins/**/*.js'],
+  collectCoverageFrom: [
+    'stores/**/*.js',
+    'plugins/**/*.js',
+    'integrations/**/*.js',
+    'composables/**/*.js',
+  ],
   coverageReporters: ['text', 'lcov'],
 }
