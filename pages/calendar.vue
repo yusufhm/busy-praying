@@ -54,7 +54,7 @@
               <v-btn icon>
                 <v-icon>mdi-pencil</v-icon>
               </v-btn>
-              <v-toolbar-title>{{ selectedEvent.title }}</v-toolbar-title>
+              <v-toolbar-title>{{ selectedEvent.name }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-btn icon>
                 <v-icon>mdi-heart</v-icon>
@@ -203,10 +203,11 @@ async function updateRange() {
       if (isNaN(hours) || isNaN(minutes)) continue
       const ts = new Date(yr, mo, dy, hours, minutes, 0).getTime()
       newEvents.push({
-        title: name,
+        name: name,
         start: new Date(ts),
         end: new Date(ts + 30 * 60 * 1000),
         color: COLORS[rnd(0, COLORS.length - 1)],
+        timed: true,
       })
     }
   }
