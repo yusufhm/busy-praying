@@ -2,7 +2,7 @@
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="6">
       <v-card>
-        <v-card-title class="headline">
+        <v-card-title class="text-h5">
           Welcome to the Busy Praying app
         </v-card-title>
         <v-card-text>
@@ -16,32 +16,14 @@
             <a href="https://aladhan.com/prayer-times-api">Prayer Times API</a>
             from aladhan.com.
           </p>
-          <!-- <p>
-            Find a bug? Report it on the github
-            <a
-              href="https://github.com/vuetifyjs/vuetify/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="contribute"
-            >
-              issue board </a
-            >.
-          </p> -->
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/calendar"> Continue </v-btn>
+          <v-btn color="primary" to="/calendar">Continue</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
   </v-row>
 </template>
 
-<script>
-export default {
-  components: {
-    // Logo,
-    // VuetifyLogo,
-  },
-}
-</script>
+<script setup></script>

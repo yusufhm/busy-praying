@@ -1,52 +1,57 @@
-import { state, mutations } from '@/store/calendar'
+import { createPinia, setActivePinia } from 'pinia'
+import { useCalendarStore } from '@/stores/calendar'
 
 describe('calendar store', () => {
-  describe('state', () => {
-    it('returns default state with empty start and end objects', () => {
-      const s = state()
-      expect(s.start).toEqual({})
-      expect(s.end).toEqual({})
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  describe('initial state', () => {
+    it('has empty start and end objects', () => {
+      const store = useCalendarStore()
+      expect(store.start).toEqual({})
+      expect(store.end).toEqual({})
     })
   })
 
-  describe('mutations', () => {
-    it('setStartEnd updates start when it differs from current value', () => {
-      const s = state()
-      const start = { year: 2024, month: 3, day: 1 }
-      const end = { year: 2024, month: 3, day: 31 }
-      mutations.setStartEnd(s, { start, end })
-      expect(s.start).toEqual(start)
-      expect(s.end).toEqual(end)
-    })
-
-    it('setStartEnd does not update start if value is the same reference', () => {
-      const s = state()
+  describe('setStartEnd action', () => {
+    it('updates start and end when they differ from current values', () => {
+      const store = useCalendarStore()
       const start = { year: 2024, month: 3 }
-      s.start = start
-      mutations.setStartEnd(s, { start, end: null })
-      expect(s.start).toBe(start)
-    })
-
-    it('setStartEnd does not update end if value is the same reference', () => {
-      const s = state()
       const end = { year: 2024, month: 3 }
-      s.end = end
-      mutations.setStartEnd(s, { start: null, end })
-      expect(s.end).toBe(end)
+      store.setStartEnd({ start, end })
+      expect(store.start).toEqual(start)
+      expect(store.end).toEqual(end)
     })
 
-    it('setStartEnd does not update start when start is falsy', () => {
-      const s = state()
-      s.start = { year: 2023 }
-      mutations.setStartEnd(s, { start: null, end: null })
-      expect(s.start).toEqual({ year: 2023 })
+    it('keeps start value when the same object is passed again', () => {
+      const store = useCalendarStore()
+      const start = { year: 2024, month: 3 }
+      store.start = start
+      store.setStartEnd({ start, end: null })
+      expect(store.start).toStrictEqual(start)
     })
 
-    it('setStartEnd does not update end when end is falsy', () => {
-      const s = state()
-      s.end = { year: 2023 }
-      mutations.setStartEnd(s, { start: null, end: undefined })
-      expect(s.end).toEqual({ year: 2023 })
+    it('keeps end value when the same object is passed again', () => {
+      const store = useCalendarStore()
+      const end = { year: 2024, month: 3 }
+      store.end = end
+      store.setStartEnd({ start: null, end })
+      expect(store.end).toStrictEqual(end)
+    })
+
+    it('leaves start unchanged when a falsy start is passed', () => {
+      const store = useCalendarStore()
+      store.start = { year: 2023 }
+      store.setStartEnd({ start: null, end: null })
+      expect(store.start).toEqual({ year: 2023 })
+    })
+
+    it('leaves end unchanged when a falsy end is passed', () => {
+      const store = useCalendarStore()
+      store.end = { year: 2023 }
+      store.setStartEnd({ start: null, end: undefined })
+      expect(store.end).toEqual({ year: 2023 })
     })
   })
 })

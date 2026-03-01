@@ -1,11 +1,11 @@
 <template>
   <v-app>
-    <v-app-bar fixed app>
-      <v-toolbar-title v-text="title" />
+    <v-app-bar app>
+      <v-toolbar-title :text="title" />
     </v-app-bar>
     <v-main>
       <v-container>
-        <nuxt />
+        <NuxtPage />
       </v-container>
     </v-main>
     <v-footer app>
@@ -14,25 +14,6 @@
   </v-app>
 </template>
 
-<script>
-export default {
-  name: 'LayoutDefault',
-  data() {
-    return {
-      items: [
-        {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/',
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Calendar',
-          to: '/calendar',
-        },
-      ],
-      title: 'Busy Praying',
-    }
-  },
-}
+<script setup>
+const title = 'Busy Praying'
 </script>
