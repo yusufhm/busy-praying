@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Use Node.js 14.x
-      uses: actions/setup-node@v1
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
       with:
-        node-version: '14.x'
+        node-version: '20.x'
 
-    - run: npm install
+    - run: npm install --legacy-peer-deps
     - run: npm run build --if-present
 #     - run: npm test
     - run: npm run generate
@@ -25,7 +25,7 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./dist
+        publish_dir: ./.output/public
         cname: busy-praying.khatm.net
 #     - run: git clone --single-branch --branch gh-pages git@github.com:yusufhm/busy-praying.git /tmp/busy-praying-gh-pages
 #     - run: |
