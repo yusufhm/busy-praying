@@ -3,8 +3,11 @@
     <v-col>
       <v-sheet height="64">
         <v-toolbar flat>
-          <v-btn variant="outlined" class="mr-4" color="grey-darken-2" @click="setToday">
+          <v-btn variant="outlined" class="mr-4 d-none d-sm-flex" color="grey-darken-2" @click="setToday">
             Today
+          </v-btn>
+          <v-btn icon size="small" variant="tonal" class="mr-2 d-flex d-sm-none" color="grey-darken-2" @click="setToday">
+            <v-icon>mdi-calendar-today</v-icon>
           </v-btn>
           <v-btn icon size="small" variant="text" color="grey-darken-2" @click="prev">
             <v-icon size="small">mdi-chevron-left</v-icon>
@@ -34,7 +37,7 @@
         <v-calendar
           v-model="focus"
           :events="events"
-          :view-mode="type"
+          :type="type"
           @click:event="showEvent"
           @click:day="({ date }) => viewDay(date)"
           @update:model-value="updateRange"
@@ -164,7 +167,11 @@ async function updateRange() {
     const date = day.date.readable
     for (const name of Object.keys(day.timings)) {
       if (SKIP_TIMINGS.has(name)) continue
-      const ts = Date.parse(`${date} ${day.timings[name]}`)
+      // Strip non-standard timezone suffix (e.g. " (IST)") that causes Date.parse
+      // to return NaN on many mobile browsers.
+      const timeStr = day.timings[name].replace(/\s*\(.*\)\s*$/, '')
+      const ts = Date.parse(`${date} ${timeStr}`)
+      if (isNaN(ts)) continue
       newEvents.push({
         title: name,
         start: new Date(ts),
