@@ -24,6 +24,13 @@ export default defineNuxtConfig({
     transpile: ['vuetify'],
   },
 
+  runtimeConfig: {
+    public: {
+      // Set NUXT_PUBLIC_MSAL_CLIENT_ID in your environment to enable Outlook sync
+      msalClientId: '',
+    },
+  },
+
   modules: ['@pinia/nuxt'],
 
   devServer: {
