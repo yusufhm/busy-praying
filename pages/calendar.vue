@@ -79,6 +79,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { usePrayertimesStore } from '@/stores/prayertimes'
 import { useCalendarStore } from '@/stores/calendar'
+import { parseFocusDate, buildCalendarEvents } from '@/composables/useCalendarEvents'
 
 const prayertimesStore = usePrayertimesStore()
 const calendarStore = useCalendarStore()
@@ -91,9 +92,6 @@ const selectedEvent = ref({})
 const selectedElement = ref(null)
 const selectedOpen = ref(false)
 const events = ref([])
-
-const COLORS = ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey-darken-1']
-const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset'])
 
 const title = computed(() => {
   let d
@@ -164,24 +162,8 @@ function showEvent({ event, nativeEvent }) {
   nativeEvent?.stopPropagation()
 }
 
-function rnd(a, b) {
-  return Math.floor((b - a + 1) * Math.random()) + a
-}
-
 async function updateRange() {
-  // Parse ISO date parts directly to avoid UTC-midnight shift on date-only strings
-  // (new Date("2026-03-01") is UTC midnight, which is the wrong local date in UTC- zones).
-  let year, month
-  if (focus.value) {
-    const parts = focus.value.split('-')
-    year = parseInt(parts[0])
-    month = parseInt(parts[1])
-  } else {
-    const now = new Date()
-    year = now.getFullYear()
-    month = now.getMonth() + 1
-  }
-  const start = { year, month }
+  const start = parseFocusDate(focus.value)
 
   calendarStore.setStartEnd({ start, end: start })
   await prayertimesStore.fetchTimes(start, $alAdhanFetchPrayerTimes)
@@ -189,29 +171,7 @@ async function updateRange() {
   const times = prayertimesStore.getTimes(start)
   if (!times.length) return
 
-  const newEvents = []
-  for (const day of times) {
-    const gr = day.date.gregorian
-    const yr = parseInt(gr.year)
-    const mo = gr.month.number - 1  // Date constructor uses 0-indexed months
-    const dy = parseInt(gr.day)
-    for (const name of Object.keys(day.timings)) {
-      if (SKIP_TIMINGS.has(name)) continue
-      // Strip non-standard timezone suffix (e.g. " (IST)") before parsing.
-      const timeStr = day.timings[name].replace(/\s*\(.*\)\s*$/, '')
-      const [hours, minutes] = timeStr.split(':').map(Number)
-      if (isNaN(hours) || isNaN(minutes)) continue
-      const ts = new Date(yr, mo, dy, hours, minutes, 0).getTime()
-      newEvents.push({
-        name: name,
-        start: new Date(ts),
-        end: new Date(ts + 30 * 60 * 1000),
-        color: COLORS[rnd(0, COLORS.length - 1)],
-        timed: true,
-      })
-    }
-  }
-  events.value = newEvents
+  events.value = buildCalendarEvents(times)
 }
 
 watch(focus, updateRange)
