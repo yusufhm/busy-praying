@@ -1,10 +1,11 @@
-export default ({ app }, inject) => {
+export default defineNuxtPlugin((nuxtApp) => {
   const baseApiUrl = 'https://api.aladhan.com/v1'
 
-  const fetchPrayerTimes = async function (params) {
-    const url = baseApiUrl + '/calendarByCity'
-    const times = await this.$axios.$get(url, { params })
-    return times.data
+  const fetchPrayerTimes = (params) => {
+    return $fetch(`${baseApiUrl}/calendarByCity`, { params }).then(
+      (res) => res.data
+    )
   }
-  inject('alAdhanFetchPrayerTimes', fetchPrayerTimes)
-}
+
+  nuxtApp.provide('alAdhanFetchPrayerTimes', fetchPrayerTimes)
+})

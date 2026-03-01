@@ -2,11 +2,11 @@ module.exports = {
   commands: [],
   url: 'http://localhost:3000',
   elements: {
-    docButton: {
-      selector: '.button--green',
+    welcomeHeading: {
+      selector: '.v-card__title',
     },
-    githubButton: {
-      selector: '.button--grey',
+    continueButton: {
+      selector: '.v-btn[href="/calendar"]',
     },
   },
 }
