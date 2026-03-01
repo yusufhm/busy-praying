@@ -5,7 +5,7 @@
     </v-app-bar>
     <v-main>
       <v-container>
-        <NuxtPage />
+        <slot />
       </v-container>
     </v-main>
     <v-footer app>
