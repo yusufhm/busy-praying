@@ -1,5 +1,5 @@
 const COLORS = ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey-darken-1']
-const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset'])
+const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset', 'Firstthird', 'Lastthird'])
 
 function rnd(a, b) {
   return Math.floor((b - a + 1) * Math.random()) + a

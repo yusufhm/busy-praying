@@ -5,7 +5,7 @@ import { parseFocusDate, buildCalendarEvents } from '@/composables/useCalendarEv
 // ----------------------------------------------------------------------------
 
 // One day of Al Adhan API data mirroring the real response shape.
-// Five prayers should survive after the four skipped timings are removed.
+// Five prayers should survive after the six skipped timings are removed.
 const MOCK_DAY = {
   date: {
     gregorian: {
@@ -28,7 +28,7 @@ const MOCK_DAY = {
 }
 
 const EXPECTED_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
-const SKIPPED_TIMINGS = ['Sunrise', 'Sunset', 'Imsak', 'Midnight']
+const SKIPPED_TIMINGS = ['Sunrise', 'Sunset', 'Imsak', 'Midnight', 'Firstthird', 'Lastthird']
 
 // ----------------------------------------------------------------------------
 // parseFocusDate
@@ -70,7 +70,7 @@ describe('parseFocusDate', () => {
 
 describe('buildCalendarEvents', () => {
   describe('skipped timings', () => {
-    it('omits Sunrise, Sunset, Imsak and Midnight', () => {
+    it('omits Sunrise, Sunset, Imsak, Midnight, Firstthird and Lastthird', () => {
       const names = buildCalendarEvents([MOCK_DAY]).map((e) => e.name)
       SKIPPED_TIMINGS.forEach((t) => expect(names).not.toContain(t))
     })

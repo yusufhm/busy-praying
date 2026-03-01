@@ -21,6 +21,8 @@ CHROMEDRIVER_SKIP_DOWNLOAD=true npm install --legacy-peer-deps
 ## Development
 
 ```bash
+npm install --legacy-peer-deps
+
 # Serve with hot reload at localhost:3000
 npm run dev
 
