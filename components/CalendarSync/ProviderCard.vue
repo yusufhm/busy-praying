@@ -43,17 +43,23 @@
     </v-card-actions>
   </v-card>
 
-  <v-dialog v-model="showDisconnectDialog" max-width="420" :persistent="loading">
+  <v-dialog
+    v-model="showDisconnectDialog"
+    max-width="420"
+    :persistent="loading"
+  >
     <v-card>
       <v-card-title>Disconnect from {{ label }}?</v-card-title>
       <v-card-text>
         <template v-if="eventCount > 0">
-          You have <strong>{{ eventCount }} prayer time {{ eventCount === 1 ? 'event' : 'events' }}</strong>
+          You have
+          <strong
+            >{{ eventCount }} prayer time
+            {{ eventCount === 1 ? 'event' : 'events' }}</strong
+          >
           synced to this calendar. Would you like to delete them too?
         </template>
-        <template v-else>
-          Are you sure you want to disconnect?
-        </template>
+        <template v-else> Are you sure you want to disconnect? </template>
       </v-card-text>
       <v-card-actions>
         <v-btn
@@ -106,8 +112,10 @@ const showDisconnectDialog = ref(false)
 
 const connected = computed(() => syncStore.isConnected(props.provider))
 
-const eventCount = computed(() =>
-  Object.values(syncStore.eventIds).filter((ids) => ids[props.provider]).length,
+const eventCount = computed(
+  () =>
+    Object.values(syncStore.eventIds).filter((ids) => ids[props.provider])
+      .length,
 )
 
 async function handleConnect() {
