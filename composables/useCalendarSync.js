@@ -59,10 +59,20 @@ export function useCalendarSync() {
   /**
    * Disconnect a provider and clear its stored event ID mappings.
    * @param {'outlook'|'google'} providerName
+   * @param {{ cleanup?: boolean }} options - Set cleanup to true to delete all
+   *   synced events from the provider's calendar before disconnecting.
    */
-  async function disconnect(providerName) {
+  async function disconnect(providerName, { cleanup = false } = {}) {
     const provider = $calendarProviders[providerName]
     if (!provider) throw new Error(`Unknown provider: ${providerName}`)
+
+    if (cleanup) {
+      for (const ids of Object.values(syncStore.eventIds)) {
+        const eventId = ids[providerName]
+        if (eventId) await provider.deleteEvent(eventId)
+      }
+    }
+
     await provider.disconnect()
     syncStore.setDisconnected(providerName)
     syncStore.clearEventIds(providerName)

@@ -134,6 +134,69 @@ describe('useCalendarSync', () => {
         'Unknown provider: yahoo',
       )
     })
+
+    it('does not call deleteEvent by default (no cleanup)', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+
+      const { disconnect } = useCalendarSync()
+      await disconnect('outlook')
+
+      expect(mockOutlook.deleteEvent).not.toHaveBeenCalled()
+    })
+
+    it('with cleanup: true calls deleteEvent for each stored event ID', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+      syncStore.setEventId('key-2', 'outlook', 'graph-evt-002')
+
+      const { disconnect } = useCalendarSync()
+      await disconnect('outlook', { cleanup: true })
+
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledTimes(2)
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-001')
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-002')
+    })
+
+    it('with cleanup: true still disconnects and clears IDs after deletion', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+
+      const { disconnect } = useCalendarSync()
+      await disconnect('outlook', { cleanup: true })
+
+      expect(mockOutlook.disconnect).toHaveBeenCalled()
+      expect(syncStore.isConnected('outlook')).toBe(false)
+      expect(syncStore.eventIds['key-1']?.outlook).toBeUndefined()
+    })
+
+    it('with cleanup: true and no synced events does not call deleteEvent', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+
+      const { disconnect } = useCalendarSync()
+      await disconnect('outlook', { cleanup: true })
+
+      expect(mockOutlook.deleteEvent).not.toHaveBeenCalled()
+      expect(mockOutlook.disconnect).toHaveBeenCalled()
+    })
+
+    it('with cleanup: true only deletes events for the disconnected provider', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      // Simulate a key that has both an outlook and a google ID
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+      syncStore.setEventId('key-1', 'google', 'gcal-evt-001')
+
+      const { disconnect } = useCalendarSync()
+      await disconnect('outlook', { cleanup: true })
+
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-001')
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledTimes(1)
+    })
   })
 
   // --------------------------------------------------------------------------

@@ -36,12 +36,53 @@
         :loading="loading"
         color="error"
         variant="outlined"
-        @click="handleDisconnect"
+        @click="showDisconnectDialog = true"
       >
         Disconnect
       </v-btn>
     </v-card-actions>
   </v-card>
+
+  <v-dialog v-model="showDisconnectDialog" max-width="420" :persistent="loading">
+    <v-card>
+      <v-card-title>Disconnect from {{ label }}?</v-card-title>
+      <v-card-text>
+        <template v-if="eventCount > 0">
+          You have <strong>{{ eventCount }} prayer time {{ eventCount === 1 ? 'event' : 'events' }}</strong>
+          synced to this calendar. Would you like to delete them too?
+        </template>
+        <template v-else>
+          Are you sure you want to disconnect?
+        </template>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+          :disabled="loading"
+          variant="text"
+          @click="showDisconnectDialog = false"
+        >
+          Cancel
+        </v-btn>
+        <v-spacer />
+        <v-btn
+          :loading="loading"
+          variant="outlined"
+          @click="handleDisconnect(false)"
+        >
+          Disconnect only
+        </v-btn>
+        <v-btn
+          v-if="eventCount > 0"
+          :loading="loading"
+          color="error"
+          variant="flat"
+          @click="handleDisconnect(true)"
+        >
+          Disconnect &amp; delete events
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -61,8 +102,13 @@ const { connect, disconnect } = useCalendarSync()
 
 const loading = ref(false)
 const error = ref(null)
+const showDisconnectDialog = ref(false)
 
 const connected = computed(() => syncStore.isConnected(props.provider))
+
+const eventCount = computed(() =>
+  Object.values(syncStore.eventIds).filter((ids) => ids[props.provider]).length,
+)
 
 async function handleConnect() {
   loading.value = true
@@ -76,11 +122,12 @@ async function handleConnect() {
   }
 }
 
-async function handleDisconnect() {
+async function handleDisconnect(cleanup) {
   loading.value = true
   error.value = null
   try {
-    await disconnect(props.provider)
+    await disconnect(props.provider, { cleanup })
+    showDisconnectDialog.value = false
   } catch (e) {
     error.value = e.message
   } finally {
