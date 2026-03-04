@@ -1,3 +1,17 @@
+import { copyFileSync } from 'node:fs'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Copy the MSAL v5 redirect bridge bundle into public/ so the popup redirect
+// page (public/auth-redirect.html) can load it as a static asset.
+const __dirname = dirname(fileURLToPath(import.meta.url))
+try {
+  copyFileSync(
+    resolve(__dirname, 'node_modules/@azure/msal-browser/lib/redirect-bridge/msal-redirect-bridge.min.js'),
+    resolve(__dirname, 'public/msal-redirect-bridge.min.js'),
+  )
+} catch {}
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: false,
@@ -32,18 +46,6 @@ export default defineNuxtConfig({
   },
 
   modules: ['@pinia/nuxt'],
-
-  nitro: {
-    publicAssets: [
-      {
-        // Serve the MSAL v5 redirect bridge bundle as a static asset.
-        // The popup redirect page (public/auth-redirect.html) loads it directly
-        // so the popup can broadcast the auth code back to the opener window.
-        dir: 'node_modules/@azure/msal-browser/lib/redirect-bridge',
-        baseURL: '/',
-      },
-    ],
-  },
 
   devServer: {
     host: '0.0.0.0',

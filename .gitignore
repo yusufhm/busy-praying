@@ -91,3 +91,6 @@ sw.*
 .output/
 
 .claude/settings.local.json
+
+# Copied from node_modules at build time by nuxt.config.js
+public/msal-redirect-bridge.min.js
