@@ -33,6 +33,18 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt'],
 
+  nitro: {
+    publicAssets: [
+      {
+        // Serve the MSAL v5 redirect bridge bundle as a static asset.
+        // The popup redirect page (public/auth-redirect.html) loads it directly
+        // so the popup can broadcast the auth code back to the opener window.
+        dir: 'node_modules/@azure/msal-browser/lib/redirect-bridge',
+        baseURL: '/',
+      },
+    ],
+  },
+
   devServer: {
     host: '0.0.0.0',
   },

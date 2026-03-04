@@ -48,9 +48,22 @@ export class OutlookProvider extends BaseCalendarProvider {
     return !!this._account
   }
 
+  restoreAccount(account) {
+    this._account = account
+  }
+
   async connect() {
-    await this._msal.initialize()
-    const result = await this._msal.loginPopup({ scopes: SCOPES })
+    // overrideInteractionInProgress clears any stale popup lock left by a
+    // previously interrupted loginPopup (e.g. page refresh mid-flow). It is
+    // safe here because the button is only enabled when no popup is active.
+    //
+    // redirectUri points to a minimal blank page so the popup doesn't load
+    // the full Nuxt app (which can interfere with MSAL's popup detection).
+    const result = await this._msal.loginPopup({
+      scopes: SCOPES,
+      overrideInteractionInProgress: true,
+      redirectUri: `${window.location.origin}/auth-redirect.html`,
+    })
     this._account = result.account
     return result.account.homeAccountId
   }

@@ -21,8 +21,26 @@
 
     <v-card-actions>
       <v-spacer />
+      <template v-if="connected">
+        <v-btn
+          disabled
+          color="success"
+          variant="tonal"
+          prepend-icon="mdi-check-circle"
+        >
+          Connected
+        </v-btn>
+        <v-btn
+          :loading="loading"
+          color="error"
+          variant="text"
+          @click="showDisconnectDialog = true"
+        >
+          Disconnect
+        </v-btn>
+      </template>
       <v-btn
-        v-if="!connected"
+        v-else
         :disabled="comingSoon || loading"
         :loading="loading"
         color="primary"
@@ -30,15 +48,6 @@
         @click="handleConnect"
       >
         Connect
-      </v-btn>
-      <v-btn
-        v-else
-        :loading="loading"
-        color="error"
-        variant="outlined"
-        @click="showDisconnectDialog = true"
-      >
-        Disconnect
       </v-btn>
     </v-card-actions>
   </v-card>
