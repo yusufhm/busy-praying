@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <!--
+      This page is the redirect URI for MSAL popup flows (msal-browser v5).
+      It loads only the lightweight redirect bridge, calls broadcastResponseToMainFrame()
+      which sends the auth code back to the opener via BroadcastChannel, then closes itself.
+      It intentionally loads no app framework.
+    -->
+    <script src="/msal-redirect-bridge.min.js"></script>
+  </head>
+  <body>
+    <script>
+      msalRedirectBridge.broadcastResponseToMainFrame().catch(function (e) {
+        console.error('MSAL redirect bridge error:', e)
+      })
+    </script>
+  </body>
+</html>
