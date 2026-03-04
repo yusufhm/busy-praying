@@ -1,7 +1,7 @@
 import { useCalendarSyncStore } from '@/stores/calendarSync'
 import { usePrayertimesStore } from '@/stores/prayertimes'
 
-const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset'])
+const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset', 'Firstthird', 'Lastthird'])
 
 /**
  * Builds the canonical dedup key for a single prayer event.
@@ -83,9 +83,10 @@ export function useCalendarSync() {
    * Creates new events or updates existing ones based on stored event IDs.
    *
    * @param {Array<{year: number, month: number}>} months
+   * @param {{ dateFilter?: { start: Date, end: Date } }} [options]
    * @returns {Promise<number>} Total number of events synced
    */
-  async function sync(months) {
+  async function sync(months, { dateFilter } = {}) {
     const { country, city } = prayertimesStore
     const connectedProviders = syncStore.connectedProviders
 
@@ -97,7 +98,10 @@ export function useCalendarSync() {
       const times = prayertimesStore.getTimes({ year, month })
       if (!times.length) continue
 
-      const events = toCalendarEvents(times, country, city, year, month)
+      let events = toCalendarEvents(times, country, city, year, month)
+      if (dateFilter) {
+        events = events.filter(e => e.start >= dateFilter.start && e.start <= dateFilter.end)
+      }
 
       for (const providerName of connectedProviders) {
         const provider = $calendarProviders[providerName]
@@ -118,5 +122,30 @@ export function useCalendarSync() {
     return totalSynced
   }
 
-  return { connect, disconnect, sync }
+  /**
+   * Delete all previously synced events from all connected providers and clear
+   * the stored event ID mappings.
+   *
+   * @returns {Promise<number>} Total number of events deleted
+   */
+  async function deleteAllSyncedEvents() {
+    const connectedProviders = syncStore.connectedProviders
+    let totalDeleted = 0
+
+    for (const providerName of connectedProviders) {
+      const provider = $calendarProviders[providerName]
+      for (const ids of Object.values(syncStore.eventIds)) {
+        const eventId = ids[providerName]
+        if (eventId) {
+          await provider.deleteEvent(eventId)
+          totalDeleted++
+        }
+      }
+      syncStore.clearEventIds(providerName)
+    }
+
+    return totalDeleted
+  }
+
+  return { connect, disconnect, sync, deleteAllSyncedEvents }
 }

@@ -7,26 +7,28 @@ import { useCalendarSync } from '@/composables/useCalendarSync'
 // Fixtures
 // ----------------------------------------------------------------------------
 
-// One day of Al Adhan API data covering all five daily prayers plus the four
-// timings the app deliberately skips (Sunrise, Sunset, Imsak, Midnight).
+// One day of Al Adhan API data covering all five daily prayers plus the six
+// timings the app deliberately skips (Sunrise, Sunset, Imsak, Midnight, Firstthird, Lastthird).
 const MOCK_TIMES = [
   {
     date: { readable: '01 Mar 2026' },
     timings: {
       Fajr: '05:30',
-      Sunrise: '07:00', // skipped
+      Sunrise: '07:00',     // skipped
       Dhuhr: '12:45',
       Asr: '16:20',
-      Sunset: '18:30', // skipped
+      Sunset: '18:30',      // skipped
       Maghrib: '18:45',
       Isha: '20:15',
-      Imsak: '05:20', // skipped
-      Midnight: '00:30', // skipped
+      Imsak: '05:20',       // skipped
+      Midnight: '00:30',    // skipped
+      Firstthird: '21:50',  // skipped
+      Lastthird: '02:10',   // skipped
     },
   },
 ]
 
-// Expected number of synced events: 9 timings − 4 skipped = 5
+// Expected number of synced events: 11 timings − 6 skipped = 5
 const EXPECTED_EVENT_COUNT = 5
 
 // ----------------------------------------------------------------------------
@@ -251,7 +253,7 @@ describe('useCalendarSync', () => {
       expect(mockOutlook.updateEvent).not.toHaveBeenCalled()
     })
 
-    it('skips Sunrise, Sunset, Imsak, and Midnight timings', async () => {
+    it('skips Sunrise, Sunset, Imsak, Midnight, Firstthird, and Lastthird timings', async () => {
       setupConnectedStore()
       const { sync } = useCalendarSync()
       await sync([{ year: 2026, month: 3 }])
@@ -261,6 +263,8 @@ describe('useCalendarSync', () => {
       expect(titles).not.toContain('Sunset')
       expect(titles).not.toContain('Imsak')
       expect(titles).not.toContain('Midnight')
+      expect(titles).not.toContain('Firstthird')
+      expect(titles).not.toContain('Lastthird')
     })
 
     it('stores the event ID returned by createEvent', async () => {
@@ -316,6 +320,32 @@ describe('useCalendarSync', () => {
       expect(count).toBe(EXPECTED_EVENT_COUNT * 2)
     })
 
+    it('with dateFilter: only syncs events whose start falls within the range', async () => {
+      setupConnectedStore()
+      const { sync } = useCalendarSync()
+
+      // Fajr is 05:30 on 01 Mar 2026 — include only that window
+      const start = new Date('2026-03-01T05:00:00')
+      const end = new Date('2026-03-01T06:00:00')
+      const count = await sync([{ year: 2026, month: 3 }], { dateFilter: { start, end } })
+
+      expect(count).toBe(1)
+      expect(mockOutlook.createEvent).toHaveBeenCalledTimes(1)
+      expect(mockOutlook.createEvent.mock.calls[0][0].title).toBe('Fajr')
+    })
+
+    it('with dateFilter: returns 0 when no events fall in the range', async () => {
+      setupConnectedStore()
+      const { sync } = useCalendarSync()
+
+      const start = new Date('2026-03-01T01:00:00')
+      const end = new Date('2026-03-01T02:00:00')
+      const count = await sync([{ year: 2026, month: 3 }], { dateFilter: { start, end } })
+
+      expect(count).toBe(0)
+      expect(mockOutlook.createEvent).not.toHaveBeenCalled()
+    })
+
     it('passes the correct event shape to the provider', async () => {
       setupConnectedStore()
       const { sync } = useCalendarSync()
@@ -332,6 +362,60 @@ describe('useCalendarSync', () => {
       expect(fajrEvent.end - fajrEvent.start).toBe(15 * 60 * 1000)
       expect(typeof fajrEvent.key).toBe('string')
       expect(fajrEvent.key).toContain('Fajr')
+    })
+  })
+
+  // --------------------------------------------------------------------------
+  describe('deleteAllSyncedEvents()', () => {
+    it('returns 0 and does nothing when no event IDs are stored', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+
+      const { deleteAllSyncedEvents } = useCalendarSync()
+      const count = await deleteAllSyncedEvents()
+
+      expect(count).toBe(0)
+      expect(mockOutlook.deleteEvent).not.toHaveBeenCalled()
+    })
+
+    it('deletes all stored events and returns the count', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+      syncStore.setEventId('key-2', 'outlook', 'graph-evt-002')
+
+      const { deleteAllSyncedEvents } = useCalendarSync()
+      const count = await deleteAllSyncedEvents()
+
+      expect(count).toBe(2)
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-001')
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-002')
+    })
+
+    it('clears stored event IDs after deletion', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+
+      const { deleteAllSyncedEvents } = useCalendarSync()
+      await deleteAllSyncedEvents()
+
+      expect(syncStore.eventIds['key-1']?.outlook).toBeUndefined()
+    })
+
+    it('skips keys that have no event ID for the provider', async () => {
+      const syncStore = useCalendarSyncStore()
+      syncStore.setConnected('outlook', 'acc-outlook-123')
+      syncStore.setEventId('key-1', 'outlook', 'graph-evt-001')
+      // key-2 has only a google ID, not outlook
+      syncStore.setEventId('key-2', 'google', 'gcal-evt-001')
+
+      const { deleteAllSyncedEvents } = useCalendarSync()
+      const count = await deleteAllSyncedEvents()
+
+      expect(count).toBe(1)
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledTimes(1)
+      expect(mockOutlook.deleteEvent).toHaveBeenCalledWith('graph-evt-001')
     })
   })
 })
