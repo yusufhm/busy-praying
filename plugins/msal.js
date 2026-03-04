@@ -9,7 +9,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     auth: {
       clientId: config.public.msalClientId,
       authority: 'https://login.microsoftonline.com/common',
-      redirectUri: window.location.origin,
+      redirectUri: window.location.origin + '/settings',
     },
     cache: {
       cacheLocation: 'localStorage',
