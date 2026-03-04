@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app :theme="effectiveTheme">
     <v-app-bar app>
       <v-toolbar-title :text="title" />
       <v-spacer />
@@ -20,5 +20,32 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useThemeStore } from '@/stores/theme'
+
 const title = 'Busy Praying'
+const themeStore = useThemeStore()
+const systemDark = ref(false)
+
+const effectiveTheme = computed(() =>
+  themeStore.preference === 'system'
+    ? (systemDark.value ? 'dark' : 'light')
+    : themeStore.preference
+)
+
+let mediaQuery = null
+
+function onSystemThemeChange(e) {
+  systemDark.value = e.matches
+}
+
+onMounted(() => {
+  mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+  systemDark.value = mediaQuery.matches
+  mediaQuery.addEventListener('change', onSystemThemeChange)
+})
+
+onUnmounted(() => {
+  mediaQuery?.removeEventListener('change', onSystemThemeChange)
+})
 </script>
