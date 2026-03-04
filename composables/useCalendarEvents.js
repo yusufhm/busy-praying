@@ -1,5 +1,6 @@
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
+
 const COLORS = ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey-darken-1']
-const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset', 'Firstthird', 'Lastthird'])
 
 function rnd(a, b) {
   return Math.floor((b - a + 1) * Math.random()) + a
@@ -37,7 +38,7 @@ export function buildCalendarEvents(times) {
     const mo = gr.month.number - 1  // Date constructor uses 0-indexed months
     const dy = parseInt(gr.day)
     for (const name of Object.keys(day.timings)) {
-      if (SKIP_TIMINGS.has(name)) continue
+      if (!SYNC_TIMINGS.has(name)) continue
       // Strip non-standard timezone suffix (e.g. " (IST)") before parsing.
       const timeStr = day.timings[name].replace(/\s*\(.*\)\s*$/, '')
       const [hours, minutes] = timeStr.split(':').map(Number)

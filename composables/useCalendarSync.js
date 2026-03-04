@@ -1,7 +1,6 @@
 import { useCalendarSyncStore } from '@/stores/calendarSync'
 import { usePrayertimesStore } from '@/stores/prayertimes'
-
-const SKIP_TIMINGS = new Set(['Midnight', 'Imsak', 'Sunrise', 'Sunset', 'Firstthird', 'Lastthird'])
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
 
 /**
  * Builds the canonical dedup key for a single prayer event.
@@ -27,7 +26,7 @@ function toCalendarEvents(times, country, city, year, month) {
   for (const day of times) {
     const readableDate = day.date.readable
     for (const [name, timeStr] of Object.entries(day.timings)) {
-      if (SKIP_TIMINGS.has(name)) continue
+      if (!SYNC_TIMINGS.has(name)) continue
       const ts = Date.parse(`${readableDate} ${timeStr}`)
       events.push({
         title: name,

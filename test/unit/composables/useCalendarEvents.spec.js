@@ -1,4 +1,5 @@
 import { parseFocusDate, buildCalendarEvents } from '@/composables/useCalendarEvents'
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
 
 // ----------------------------------------------------------------------------
 // Fixtures
@@ -27,8 +28,7 @@ const MOCK_DAY = {
   },
 }
 
-const EXPECTED_PRAYERS = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']
-const SKIPPED_TIMINGS = ['Sunrise', 'Sunset', 'Imsak', 'Midnight', 'Firstthird', 'Lastthird']
+const EXPECTED_PRAYERS = [...SYNC_TIMINGS]
 
 // ----------------------------------------------------------------------------
 // parseFocusDate
@@ -69,10 +69,10 @@ describe('parseFocusDate', () => {
 // ----------------------------------------------------------------------------
 
 describe('buildCalendarEvents', () => {
-  describe('skipped timings', () => {
-    it('omits Sunrise, Sunset, Imsak, Midnight, Firstthird and Lastthird', () => {
+  describe('timing filter', () => {
+    it('only includes timings in SYNC_TIMINGS', () => {
       const names = buildCalendarEvents([MOCK_DAY]).map((e) => e.name)
-      SKIPPED_TIMINGS.forEach((t) => expect(names).not.toContain(t))
+      names.forEach((n) => expect(SYNC_TIMINGS.has(n)).toBe(true))
     })
 
     it('includes all five daily prayers', () => {

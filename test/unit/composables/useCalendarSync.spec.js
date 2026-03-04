@@ -2,34 +2,34 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useCalendarSyncStore } from '@/stores/calendarSync'
 import { usePrayertimesStore } from '@/stores/prayertimes'
 import { useCalendarSync } from '@/composables/useCalendarSync'
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
 
 // ----------------------------------------------------------------------------
 // Fixtures
 // ----------------------------------------------------------------------------
 
-// One day of Al Adhan API data covering all five daily prayers plus the six
-// timings the app deliberately skips (Sunrise, Sunset, Imsak, Midnight, Firstthird, Lastthird).
+// One day of Al Adhan API data covering all five daily prayers plus extra
+// timings not in SYNC_TIMINGS (Sunrise, Sunset, Imsak, Midnight, Firstthird, Lastthird).
 const MOCK_TIMES = [
   {
     date: { readable: '01 Mar 2026' },
     timings: {
       Fajr: '05:30',
-      Sunrise: '07:00',     // skipped
+      Sunrise: '07:00',     // not synced
       Dhuhr: '12:45',
       Asr: '16:20',
-      Sunset: '18:30',      // skipped
+      Sunset: '18:30',      // not synced
       Maghrib: '18:45',
       Isha: '20:15',
-      Imsak: '05:20',       // skipped
-      Midnight: '00:30',    // skipped
-      Firstthird: '21:50',  // skipped
-      Lastthird: '02:10',   // skipped
+      Imsak: '05:20',       // not synced
+      Midnight: '00:30',    // not synced
+      Firstthird: '21:50',  // not synced
+      Lastthird: '02:10',   // not synced
     },
   },
 ]
 
-// Expected number of synced events: 11 timings − 6 skipped = 5
-const EXPECTED_EVENT_COUNT = 5
+const EXPECTED_EVENT_COUNT = SYNC_TIMINGS.size
 
 // ----------------------------------------------------------------------------
 // Mocks
@@ -253,18 +253,13 @@ describe('useCalendarSync', () => {
       expect(mockOutlook.updateEvent).not.toHaveBeenCalled()
     })
 
-    it('skips Sunrise, Sunset, Imsak, Midnight, Firstthird, and Lastthird timings', async () => {
+    it('only syncs timings in SYNC_TIMINGS', async () => {
       setupConnectedStore()
       const { sync } = useCalendarSync()
       await sync([{ year: 2026, month: 3 }])
 
       const titles = mockOutlook.createEvent.mock.calls.map(([e]) => e.title)
-      expect(titles).not.toContain('Sunrise')
-      expect(titles).not.toContain('Sunset')
-      expect(titles).not.toContain('Imsak')
-      expect(titles).not.toContain('Midnight')
-      expect(titles).not.toContain('Firstthird')
-      expect(titles).not.toContain('Lastthird')
+      titles.forEach((t) => expect(SYNC_TIMINGS.has(t)).toBe(true))
     })
 
     it('stores the event ID returned by createEvent', async () => {
