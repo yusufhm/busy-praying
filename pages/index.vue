@@ -19,11 +19,24 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" to="/calendar">Continue</v-btn>
+          <v-btn color="primary" @click="handleContinue">Continue</v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
   </v-row>
 </template>
 
-<script setup></script>
+<script setup>
+import { usePrayertimesStore } from '~/stores/prayertimes'
+
+const store = usePrayertimesStore()
+const router = useRouter()
+
+function handleContinue() {
+  if (store.city && store.country) {
+    router.push('/calendar')
+  } else {
+    router.push('/settings')
+  }
+}
+</script>
