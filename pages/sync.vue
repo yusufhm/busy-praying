@@ -136,7 +136,7 @@ const scopeOptions = [
   { title: 'Next 6 months', value: 6 },
 ]
 
-const syncScope = ref(1)
+const syncScope = ref('week')
 const syncing = ref(false)
 const syncError = ref(null)
 const syncResult = ref(null)
