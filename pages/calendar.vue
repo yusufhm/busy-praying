@@ -91,7 +91,13 @@ const typeToLabel = { month: 'Month', week: 'Week', day: 'Day' }
 const selectedEvent = ref({})
 const selectedElement = ref(null)
 const selectedOpen = ref(false)
-const events = ref([])
+
+const currentStart = computed(() => parseFocusDate(focus.value))
+const events = computed(() => {
+  const times = prayertimesStore.getTimes(currentStart.value)
+  if (!times.length) return []
+  return buildCalendarEvents(times, prayertimesStore.prayerColors)
+})
 
 const title = computed(() => {
   let d
@@ -164,14 +170,8 @@ function showEvent({ event, nativeEvent }) {
 
 async function updateRange() {
   const start = parseFocusDate(focus.value)
-
   calendarStore.setStartEnd({ start, end: start })
   await prayertimesStore.fetchTimes(start, $alAdhanFetchPrayerTimes)
-
-  const times = prayertimesStore.getTimes(start)
-  if (!times.length) return
-
-  events.value = buildCalendarEvents(times)
 }
 
 watch(focus, updateRange)
