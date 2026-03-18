@@ -29,7 +29,9 @@ const MOCK_TIMES = [
   },
 ]
 
-const EXPECTED_EVENT_COUNT = SYNC_TIMINGS.size
+// Default syncPrayers: Dhuhr, Asr, Maghrib
+const DEFAULT_SYNC_PRAYERS = ['Dhuhr', 'Asr', 'Maghrib']
+const EXPECTED_EVENT_COUNT = DEFAULT_SYNC_PRAYERS.length
 
 // ----------------------------------------------------------------------------
 // Mocks
@@ -262,6 +264,32 @@ describe('useCalendarSync', () => {
       titles.forEach((t) => expect(SYNC_TIMINGS.has(t)).toBe(true))
     })
 
+    it('only syncs the prayers listed in syncPrayers', async () => {
+      const { syncStore } = setupConnectedStore()
+      syncStore.setSyncPrayers(['Fajr', 'Isha'])
+
+      const { sync } = useCalendarSync()
+      const count = await sync([{ year: 2026, month: 3 }])
+
+      expect(count).toBe(2)
+      const titles = mockOutlook.createEvent.mock.calls.map(([e]) => e.title)
+      expect(titles).toEqual(expect.arrayContaining(['Fajr', 'Isha']))
+      expect(titles).not.toContain('Dhuhr')
+      expect(titles).not.toContain('Asr')
+      expect(titles).not.toContain('Maghrib')
+    })
+
+    it('returns 0 when syncPrayers is empty', async () => {
+      const { syncStore } = setupConnectedStore()
+      syncStore.setSyncPrayers([])
+
+      const { sync } = useCalendarSync()
+      const count = await sync([{ year: 2026, month: 3 }])
+
+      expect(count).toBe(0)
+      expect(mockOutlook.createEvent).not.toHaveBeenCalled()
+    })
+
     it('stores the event ID returned by createEvent', async () => {
       const { syncStore } = setupConnectedStore()
       const { sync } = useCalendarSync()
@@ -276,17 +304,17 @@ describe('useCalendarSync', () => {
 
     it('calls updateEvent (not createEvent) when an event ID is already stored', async () => {
       const { syncStore } = setupConnectedStore()
-      const fajrKey = 'GB-London-2026-3-Fajr-01 Mar 2026'
-      syncStore.setEventId(fajrKey, 'outlook', 'existing-graph-id')
+      const dhuhrKey = 'GB-London-2026-3-Dhuhr-01 Mar 2026'
+      syncStore.setEventId(dhuhrKey, 'outlook', 'existing-graph-id')
 
       const { sync } = useCalendarSync()
       await sync([{ year: 2026, month: 3 }])
 
       expect(mockOutlook.updateEvent).toHaveBeenCalledWith(
         'existing-graph-id',
-        expect.objectContaining({ title: 'Fajr' }),
+        expect.objectContaining({ title: 'Dhuhr' }),
       )
-      // Only the remaining 4 prayers are created fresh
+      // Only the remaining 2 prayers are created fresh (Asr, Maghrib)
       expect(mockOutlook.createEvent).toHaveBeenCalledTimes(
         EXPECTED_EVENT_COUNT - 1,
       )
@@ -319,14 +347,14 @@ describe('useCalendarSync', () => {
       setupConnectedStore()
       const { sync } = useCalendarSync()
 
-      // Fajr is 05:30 on 01 Mar 2026 — include only that window
-      const start = new Date('2026-03-01T05:00:00')
-      const end = new Date('2026-03-01T06:00:00')
+      // Dhuhr is 12:45 on 01 Mar 2026 — include only that window
+      const start = new Date('2026-03-01T12:00:00')
+      const end = new Date('2026-03-01T13:00:00')
       const count = await sync([{ year: 2026, month: 3 }], { dateFilter: { start, end } })
 
       expect(count).toBe(1)
       expect(mockOutlook.createEvent).toHaveBeenCalledTimes(1)
-      expect(mockOutlook.createEvent.mock.calls[0][0].title).toBe('Fajr')
+      expect(mockOutlook.createEvent.mock.calls[0][0].title).toBe('Dhuhr')
     })
 
     it('with dateFilter: returns 0 when no events fall in the range', async () => {
@@ -346,17 +374,17 @@ describe('useCalendarSync', () => {
       const { sync } = useCalendarSync()
       await sync([{ year: 2026, month: 3 }])
 
-      const fajrCall = mockOutlook.createEvent.mock.calls.find(
-        ([e]) => e.title === 'Fajr',
+      const dhuhrCall = mockOutlook.createEvent.mock.calls.find(
+        ([e]) => e.title === 'Dhuhr',
       )
-      expect(fajrCall).toBeDefined()
-      const [fajrEvent] = fajrCall
-      expect(fajrEvent.start).toBeInstanceOf(Date)
-      expect(fajrEvent.end).toBeInstanceOf(Date)
+      expect(dhuhrCall).toBeDefined()
+      const [dhuhrEvent] = dhuhrCall
+      expect(dhuhrEvent.start).toBeInstanceOf(Date)
+      expect(dhuhrEvent.end).toBeInstanceOf(Date)
       // end should be 15 minutes after start
-      expect(fajrEvent.end - fajrEvent.start).toBe(15 * 60 * 1000)
-      expect(typeof fajrEvent.key).toBe('string')
-      expect(fajrEvent.key).toContain('Fajr')
+      expect(dhuhrEvent.end - dhuhrEvent.start).toBe(15 * 60 * 1000)
+      expect(typeof dhuhrEvent.key).toBe('string')
+      expect(dhuhrEvent.key).toContain('Dhuhr')
     })
   })
 

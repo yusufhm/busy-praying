@@ -21,12 +21,13 @@ function buildKey(country, city, year, month, prayerName, readableDate) {
  * @param {number} month
  * @returns {import('@/integrations/calendar/BaseCalendarProvider').CalendarEvent[]}
  */
-function toCalendarEvents(times, country, city, year, month) {
+function toCalendarEvents(times, country, city, year, month, syncPrayers) {
+  const prayerSet = new Set(syncPrayers)
   const events = []
   for (const day of times) {
     const readableDate = day.date.readable
     for (const [name, timeStr] of Object.entries(day.timings)) {
-      if (!SYNC_TIMINGS.has(name)) continue
+      if (!SYNC_TIMINGS.has(name) || !prayerSet.has(name)) continue
       const ts = Date.parse(`${readableDate} ${timeStr}`)
       events.push({
         title: name,
@@ -97,7 +98,7 @@ export function useCalendarSync() {
       const times = prayertimesStore.getTimes({ year, month })
       if (!times.length) continue
 
-      let events = toCalendarEvents(times, country, city, year, month)
+      let events = toCalendarEvents(times, country, city, year, month, syncStore.syncPrayers)
       if (dateFilter) {
         events = events.filter(e => e.start >= dateFilter.start && e.start <= dateFilter.end)
       }
