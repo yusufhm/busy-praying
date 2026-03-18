@@ -29,6 +29,11 @@ describe('calendarSync store', () => {
       expect(store.lastSyncedAt).toBeNull()
       expect(store.lastSyncCount).toBe(0)
     })
+
+    it('has Dhuhr, Asr and Maghrib enabled by default', () => {
+      const store = useCalendarSyncStore()
+      expect(store.syncPrayers).toStrictEqual(['Dhuhr', 'Asr', 'Maghrib'])
+    })
   })
 
   describe('getters', () => {
@@ -112,6 +117,18 @@ describe('calendarSync store', () => {
       store.recordSync(5)
       expect(store.lastSyncedAt).not.toBeNull()
       expect(store.lastSyncCount).toBe(5)
+    })
+
+    it('setSyncPrayers replaces the syncPrayers list', () => {
+      const store = useCalendarSyncStore()
+      store.setSyncPrayers(['Fajr', 'Isha'])
+      expect(store.syncPrayers).toStrictEqual(['Fajr', 'Isha'])
+    })
+
+    it('setSyncPrayers accepts an empty list', () => {
+      const store = useCalendarSyncStore()
+      store.setSyncPrayers([])
+      expect(store.syncPrayers).toStrictEqual([])
     })
   })
 })

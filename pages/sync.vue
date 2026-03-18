@@ -28,6 +28,19 @@
         <v-card>
           <v-card-title>Sync prayer times</v-card-title>
           <v-card-text>
+            <div class="text-body-2 mb-1">Prayers to sync</div>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+              <v-checkbox
+                v-for="prayer in allPrayers"
+                :key="prayer"
+                :label="prayer"
+                :model-value="syncStore.syncPrayers.includes(prayer)"
+                density="compact"
+                hide-details
+                @update:model-value="togglePrayer(prayer, $event)"
+              />
+            </div>
+
             <v-select
               v-model="syncScope"
               :items="scopeOptions"
@@ -104,6 +117,7 @@ import { ref, computed } from 'vue'
 import { useCalendarSyncStore } from '@/stores/calendarSync'
 import { usePrayertimesStore } from '@/stores/prayertimes'
 import { useCalendarSync } from '@/composables/useCalendarSync'
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
 import ProviderCard from '@/components/CalendarSync/ProviderCard.vue'
 import SyncSummary from '@/components/CalendarSync/SyncSummary.vue'
 
@@ -145,10 +159,21 @@ const deleting = ref(false)
 const deleteError = ref(null)
 const deleteResult = ref(null)
 
+const allPrayers = [...SYNC_TIMINGS]
+
 const anyConnected = computed(() => syncStore.connectedProviders.length > 0)
 const locationSet = computed(
   () => !!prayertimesStore.country && !!prayertimesStore.city,
 )
+
+function togglePrayer(prayer, enabled) {
+  const current = syncStore.syncPrayers
+  if (enabled) {
+    syncStore.setSyncPrayers([...new Set([...current, prayer])])
+  } else {
+    syncStore.setSyncPrayers(current.filter((p) => p !== prayer))
+  }
+}
 
 function buildMonths(count) {
   const months = []

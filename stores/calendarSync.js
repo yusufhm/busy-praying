@@ -11,6 +11,7 @@ export const useCalendarSyncStore = defineStore('calendarSync', {
     eventIds: {},
     lastSyncedAt: null,
     lastSyncCount: 0,
+    syncPrayers: ['Dhuhr', 'Asr', 'Maghrib'],
   }),
 
   getters: {
@@ -49,6 +50,10 @@ export const useCalendarSyncStore = defineStore('calendarSync', {
           delete this.eventIds[key][provider]
         }
       }
+    },
+
+    setSyncPrayers(prayers) {
+      this.syncPrayers = prayers
     },
 
     recordSync(count) {
