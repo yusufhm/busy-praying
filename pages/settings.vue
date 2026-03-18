@@ -20,6 +20,52 @@
     </v-card-text>
   </v-card>
 
+  <v-card class="mb-6">
+    <v-card-title>Prayer Colours</v-card-title>
+    <v-card-text>
+      <v-row>
+        <v-col
+          v-for="prayer in prayers"
+          :key="prayer"
+          cols="12"
+          sm="6"
+          md="4"
+        >
+          <div class="d-flex align-center ga-3">
+            <span class="text-body-1">{{ prayer }}</span>
+            <v-btn
+              :color="store.prayerColors[prayer]"
+              size="small"
+              variant="flat"
+              rounded
+              @click="openColorPicker(prayer)"
+            >
+              <v-icon>mdi-palette</v-icon>
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
+
+  <v-dialog v-model="colorPickerOpen" max-width="320">
+    <v-card>
+      <v-card-title>{{ editingPrayer }} Colour</v-card-title>
+      <v-card-text class="d-flex justify-center">
+        <v-color-picker
+          v-model="editingColor"
+          :modes="['hex']"
+          hide-inputs
+        ></v-color-picker>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn variant="text" @click="colorPickerOpen = false">Cancel</v-btn>
+        <v-btn color="primary" variant="text" @click="saveColor">Save</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <v-form ref="form" @submit.prevent="submit">
     <v-autocomplete
       v-model="country"
@@ -48,12 +94,30 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { Country, City } from 'country-state-city'
 import { usePrayertimesStore } from '@/stores/prayertimes'
 import { useThemeStore } from '@/stores/theme'
+import { SYNC_TIMINGS } from '@/utils/prayerTimings'
 
 const store = usePrayertimesStore()
 const themeStore = useThemeStore()
 const form = ref(null)
 const country = ref('')
 const city = ref('')
+
+const prayers = [...SYNC_TIMINGS]
+
+const colorPickerOpen = ref(false)
+const editingPrayer = ref('')
+const editingColor = ref('')
+
+function openColorPicker(prayer) {
+  editingPrayer.value = prayer
+  editingColor.value = store.prayerColors[prayer]
+  colorPickerOpen.value = true
+}
+
+function saveColor() {
+  store.setPrayerColor(editingPrayer.value, editingColor.value)
+  colorPickerOpen.value = false
+}
 
 const countries = computed(() =>
   Country.getAllCountries().map(({ name, isoCode }) => ({

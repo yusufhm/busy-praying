@@ -1,10 +1,5 @@
 import { SYNC_TIMINGS } from '@/utils/prayerTimings'
-
-const COLORS = ['blue', 'indigo', 'deep-purple', 'cyan', 'green', 'orange', 'grey-darken-1']
-
-function rnd(a, b) {
-  return Math.floor((b - a + 1) * Math.random()) + a
-}
+import { DEFAULT_PRAYER_COLORS } from '@/stores/prayertimes'
 
 /**
  * Parse an ISO focus date string ("YYYY-MM-DD") into { year, month } using
@@ -29,8 +24,11 @@ export function parseFocusDate(focusStr) {
  *    "timedless" and falls back to event.timed for day-view positioning.
  *  - Timestamps are built from day.date.gregorian parts (not Date.parse on
  *    the human-readable string) for reliable cross-browser parsing.
+ *
+ * @param {Array} times - Array of day objects from the Al Adhan API.
+ * @param {Object} colors - Map of prayer name to hex color string.
  */
-export function buildCalendarEvents(times) {
+export function buildCalendarEvents(times, colors = DEFAULT_PRAYER_COLORS) {
   const events = []
   for (const day of times) {
     const gr = day.date.gregorian
@@ -48,7 +46,7 @@ export function buildCalendarEvents(times) {
         name,
         start: new Date(ts),
         end: new Date(ts + 30 * 60 * 1000),
-        color: COLORS[rnd(0, COLORS.length - 1)],
+        color: (colors ?? {})[name] ?? DEFAULT_PRAYER_COLORS[name] ?? '#607D8B',
         timed: true,
       })
     }

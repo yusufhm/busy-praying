@@ -1,10 +1,19 @@
 import { defineStore } from 'pinia'
 
+export const DEFAULT_PRAYER_COLORS = {
+  Fajr: '#5C6BC0',
+  Dhuhr: '#FB8C00',
+  Asr: '#43A047',
+  Maghrib: '#E53935',
+  Isha: '#1565C0',
+}
+
 export const usePrayertimesStore = defineStore('prayertimes', {
   state: () => ({
     times: {},
     city: '',
     country: '',
+    prayerColors: { ...DEFAULT_PRAYER_COLORS },
   }),
 
   getters: {
@@ -23,6 +32,9 @@ export const usePrayertimesStore = defineStore('prayertimes', {
     },
     setCity(city) {
       this.city = city
+    },
+    setPrayerColor(prayer, color) {
+      this.prayerColors[prayer] = color
     },
     // fetchFn is passed in so the action is testable without Nuxt
     async fetchTimes(start, fetchFn) {
