@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Busy Praying">
+  <title>Busy Praying</title>
+  <defs>
+    <mask id="crescent-mask">
+      <rect width="48" height="48" fill="white"/>
+      <circle cx="30" cy="19" r="14" fill="black"/>
+    </mask>
+  </defs>
+  <!-- Background circle -->
+  <circle cx="24" cy="24" r="24" fill="#0D3B2E"/>
+  <!-- Crescent moon -->
+  <circle cx="22" cy="24" r="16" fill="#F2EBD9" mask="url(#crescent-mask)"/>
+  <!-- Four-point star -->
+  <path d="M38 11 L39.5 14.5 L43 16 L39.5 17.5 L38 21 L36.5 17.5 L33 16 L36.5 14.5 Z" fill="#C9A84C"/>
+</svg>
