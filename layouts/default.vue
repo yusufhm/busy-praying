@@ -1,7 +1,12 @@
 <template>
   <v-app :theme="effectiveTheme">
     <v-app-bar app>
-      <v-toolbar-title :text="title" />
+      <v-toolbar-title>
+        <div class="d-flex align-center ga-2">
+          <img src="/logo.svg" alt="" height="32" width="32" />
+          <span class="app-title">{{ title }}</span>
+        </div>
+      </v-toolbar-title>
       <v-spacer />
       <v-btn to="/calendar" variant="text">Calendar</v-btn>
       <v-btn to="/sync" variant="text">Sync</v-btn>
@@ -49,3 +54,12 @@ onUnmounted(() => {
   mediaQuery?.removeEventListener('change', onSystemThemeChange)
 })
 </script>
+
+<style scoped>
+.app-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 1.1rem;
+}
+</style>
